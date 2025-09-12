@@ -57,12 +57,12 @@ export function ThreeDTestimonialMarquee({
           style={{ perspective: "1000px" }}
         >
           <div
-            style={{ transform: "rotateX(35deg) rotateY(0deg) rotateZ(-35deg)" }}
-            className="relative left-1/2 -translate-x-1/2 grid w-[160%] origin-center grid-cols-3 gap-x-3 gap-y-0 transform-3d transform-gpu md:top-32 lg:top-28"
+            style={{ transform: "rotateX(25deg) rotateY(0deg) rotateZ(-20deg)" }}
+            className="relative left-1/2 -translate-x-1/2 grid w-[120%] origin-center grid-cols-3 gap-x-2 gap-y-0 transform-3d transform-gpu md:top-24 lg:top-20"
           >
             {columns.map((subarray, colIndex) => {
               // Base stack content (increase height to exceed viewport reliably)
-              const stackItems = [...subarray, ...subarray, ...subarray, ...subarray];
+              const stackItems = [...subarray];
               const goesDown = colIndex === 1; // center down, outers up
               const distance = stackHeights[colIndex] || 900;
               const dur = prefersReduced ? 0 : duration + colIndex * 4;
@@ -124,7 +124,7 @@ export function ThreeDTestimonialMarquee({
 function TestimonialCard({ item }: { item: Testimonial }) {
   const stars = Math.max(0, Math.min(5, item.rating ?? 5));
   return (
-    <div className="relative z-20 w-full rounded-xl border border-[rgba(255,20,147,0.2)] bg-white/92 p-2 text-[0.92rem] text-gray-800 shadow-[0_8px_24px_rgba(233,30,99,0.12)] ring-[rgba(255,20,147,0.1)] ring-1 backdrop-blur-md dark:border-[rgba(255,255,255,0.14)] dark:bg-black/45 dark:text-gray-100">
+    <div className="relative z-20 w-[260px] md:w-[280px] h-[170px] md:h-[180px] rounded-xl border border-[rgba(255,20,147,0.2)] bg-white/92 p-3 text-[0.92rem] text-gray-800 shadow-[0_8px_24px_rgba(233,30,99,0.12)] ring-[rgba(255,20,147,0.1)] ring-1 backdrop-blur-md dark:border-[rgba(255,255,255,0.14)] dark:bg-black/45 dark:text-gray-100">
       <div className="mb-1 flex items-center gap-2">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
