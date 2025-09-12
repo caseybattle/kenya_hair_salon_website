@@ -1,0 +1,8 @@
+{
+  "command": "npx",
+  "args": ["shadcn@latest", "mcp"],
+  "working_directory": "C:\\Users\\casba\\dev\\Kenya_Hair_website\\my-app",
+  "env": {
+    "NODE_ENV": "development"
+  }
+}
