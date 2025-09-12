@@ -50,27 +50,25 @@ export function ThreeDTestimonialMarquee({
   }, [measure]);
 
   return (
-    <div className={cn("mx-auto block h-[700px] overflow-hidden rounded-2xl", className)}>
+    <div className={cn("mx-auto block w-full h-[560px] md:h-[640px] lg:h-[700px] overflow-hidden rounded-2xl", className)}>
       <div className="flex size-full items-center justify-center">
         <div
           className="shrink-0 w-full"
-          style={{
-            perspective: "1000px",
-          }}
+          style={{ perspective: "1000px" }}
         >
           <div
             style={{ transform: "rotateX(35deg) rotateY(0deg) rotateZ(-35deg)" }}
-            className="relative top-40 left-1/2 -translate-x-1/2 grid w-[140%] origin-center grid-cols-3 gap-x-2 gap-y-0 transform-3d transform-gpu"
+            className="relative left-1/2 -translate-x-1/2 grid w-[160%] origin-center grid-cols-3 gap-x-3 gap-y-0 transform-3d transform-gpu md:top-32 lg:top-28"
           >
             {columns.map((subarray, colIndex) => {
               // Base stack content (increase height to exceed viewport reliably)
               const stackItems = [...subarray, ...subarray, ...subarray, ...subarray];
               const goesDown = colIndex === 1; // center down, outers up
-              const distance = stackHeights[colIndex] || 1000;
+              const distance = stackHeights[colIndex] || 900;
               const dur = prefersReduced ? 0 : duration + colIndex * 4;
 
               return (
-                <div data-testid="col" key={colIndex + "marquee-col"} className="relative overflow-hidden">
+                <div data-testid="col" key={colIndex + "marquee-col"} className="relative overflow-visible">
                   {/* Stack A */}
                   <motion.div
                     ref={(el: HTMLDivElement | null) => { if (el) { stackRefsA.current[colIndex] = el; } }}
