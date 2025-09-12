@@ -8,6 +8,7 @@ import { ShimmerButton } from '@/components/magicui/shimmer-button'
 import { BlurFade } from '@/components/magicui/blur-fade'
 import { ThreeDMarquee } from '@/components/ui/3d-marquee'
 import { ThreeDTestimonialMarquee, type Testimonial } from '@/components/ui/3d-testimonial-marquee'
+import { AnimatedTestimonials } from '@/components/ui/animated-testimonials'
 
 const testimonials: Testimonial[] = [
   {
@@ -821,10 +822,12 @@ export default function SalonSupreme() {
         <div className="container">
           <h2 className="section-title fade-in">What Clients Say</h2>
           <p className="testimonials-subtitle fade-in">Real experiences from clients who love their results</p>
-          <div className="testimonials-marquee-wrap fade-in">
-            <ThreeDTestimonialMarquee
-              className="mt-6"
+          <div className="testimonials-marquee-wrap fade-in" style={{paddingLeft: 0, paddingRight: 0}}>
+            {/* Replaced with Aceternity-like animated testimonials to fill container without side gaps */}
+            <AnimatedTestimonials
+              className="mt-2"
               items={testimonials}
+              autoplay
             />
           </div>
         </div>
