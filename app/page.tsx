@@ -822,10 +822,12 @@ export default function SalonSupreme() {
           <h2 className="section-title fade-in">What Clients Say</h2>
           <p className="testimonials-subtitle fade-in">Real experiences from clients who love their results</p>
           <div className="testimonials-marquee-wrap fade-in">
-            <ThreeDTestimonialMarquee
-              className="mt-6"
-              items={testimonials}
-            />
+<div style={{ paddingLeft: '0px' }}>
+              <ThreeDTestimonialMarquee
+                className="mt-6"
+                items={testimonials}
+              />
+            </div>
           </div>
         </div>
       </section>

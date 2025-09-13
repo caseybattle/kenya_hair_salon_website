@@ -21,8 +21,8 @@ export function ThreeDTestimonialMarquee({
   className?: string;
   duration?: number; // seconds per column scroll
 }) {
-  // Distribute into 3 balanced columns
-  const cols = 3;
+  // Distribute into 6 balanced columns (fill full width: 1–6)
+  const cols = 6;
   const columns: Testimonial[][] = Array.from({ length: cols }, () => []);
   items.forEach((item, i) => {
     columns[i % cols].push(item);
@@ -49,8 +49,21 @@ export function ThreeDTestimonialMarquee({
     return () => window.removeEventListener("resize", measure);
   }, [measure]);
 
+  // Keep apparent speed consistent regardless of stack height by deriving speed from the left column
+  const baseDistance = stackHeights[0] || 900; // px
+  const baseDur = duration; // seconds for left column (original baseline)
+  const baseSpeedPxPerSec = (baseDistance / Math.max(1, baseDur)) * 0.06; // ultra calmest motion
+
+  // Measure container height for amplitude clamping
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [containerH, setContainerH] = React.useState<number>(640);
+  React.useEffect(() => {
+    const h = containerRef.current?.clientHeight;
+    if (typeof h === "number" && h > 0) setContainerH(h);
+  }, []);
+
   return (
-    <div className={cn("mx-auto block w-full h-[560px] md:h-[640px] lg:h-[700px] overflow-hidden rounded-2xl", className)}>
+    <div ref={containerRef} className={cn("mx-auto block w-full h-[560px] md:h-[640px] lg:h-[700px] overflow-hidden rounded-2xl p-4", className)}>
       <div className="flex size-full items-center justify-center">
         <div
           className="shrink-0 w-full"
@@ -58,54 +71,36 @@ export function ThreeDTestimonialMarquee({
         >
           <div
             style={{ transform: "rotateX(25deg) rotateY(0deg) rotateZ(-20deg)" }}
-            className="relative left-1/2 -translate-x-1/2 grid w-[120%] origin-center grid-cols-3 gap-x-2 gap-y-0 transform-3d transform-gpu md:top-24 lg:top-20"
+            className="relative left-1/2 -translate-x-1/2 grid w-auto origin-center grid-cols-[max-content_max-content_max-content_max-content_max-content_max-content] gap-x-0 gap-y-0 transform-3d transform-gpu md:top-24 lg:top-20"
           >
             {columns.map((subarray, colIndex) => {
-              // Base stack content (increase height to exceed viewport reliably)
-              const stackItems = [...subarray];
-              const goesDown = colIndex === 1; // center down, outers up
+              // Use a single track that bounces within the container to avoid out-of-frame jumps
+              const repeat = 5; // increase repetition to show more cards vertically
+              const stackItems = Array.from({ length: repeat }).flatMap(() => subarray);
               const distance = stackHeights[colIndex] || 900;
-              const dur = prefersReduced ? 0 : duration + colIndex * 4;
+              // Clamp movement amplitude to container view area (smaller sway for maximum calm)
+              const amp = Math.max(24, Math.min((containerH || 640) * 0.08, distance * 0.08));
+              // Maintain consistent speed (px/sec) with slight column variance
+              const speedPxPerSec = baseSpeedPxPerSec * (1 - colIndex * 0.08);
+              const dur = prefersReduced ? 0 : amp / Math.max(1, speedPxPerSec);
 
               return (
-                <div data-testid="col" key={colIndex + "marquee-col"} className="relative overflow-visible">
-                  {/* Stack A */}
+                <div data-testid="col" key={colIndex + "marquee-col"} className="relative overflow-hidden">
                   <motion.div
                     ref={(el: HTMLDivElement | null) => { if (el) { stackRefsA.current[colIndex] = el; } }}
-                    animate={prefersReduced ? undefined : { y: goesDown ? [0, distance] : [0, -distance] }}
+                    animate={prefersReduced ? undefined : { y: [-amp, amp] }}
                     transition={prefersReduced ? undefined : {
                       duration: dur,
-                      ease: "linear",
+                      ease: "easeInOut",
                       repeat: Infinity,
-                      repeatType: "loop",
+                      repeatType: "reverse",
                     }}
-                    className="flex flex-col items-start gap-0 will-change-transform"
+                    className="flex flex-col items-center gap-0 will-change-transform"
                     style={{ willChange: "transform" }}
                   >
                     <GridLineVertical className="-left-1" offset="12px" />
                     {stackItems.map((t, i) => (
                       <div className="relative" key={`A-${colIndex}-${i}-${t.name}`}>
-                        <GridLineHorizontal className="-top-1" offset="6px" />
-                        <TestimonialCard item={t} />
-                      </div>
-                    ))}
-                  </motion.div>
-
-                  {/* Stack B (offset complement for perfect tiling) */}
-                  <motion.div
-                    animate={prefersReduced ? undefined : (goesDown ? { y: [-distance, 0] } : { y: [distance, 0] })}
-                    transition={prefersReduced ? undefined : {
-                      duration: dur,
-                      ease: "linear",
-                      repeat: Infinity,
-                      repeatType: "loop",
-                    }}
-                    className="flex flex-col items-start gap-0 will-change-transform"
-                    style={{ willChange: "transform", marginTop: 0 }}
-                  >
-                    <GridLineVertical className="-left-1" offset="12px" />
-                    {stackItems.map((t, i) => (
-                      <div className="relative" key={`B-${colIndex}-${i}-${t.name}`}>
                         <GridLineHorizontal className="-top-1" offset="6px" />
                         <TestimonialCard item={t} />
                       </div>
@@ -124,8 +119,8 @@ export function ThreeDTestimonialMarquee({
 function TestimonialCard({ item }: { item: Testimonial }) {
   const stars = Math.max(0, Math.min(5, item.rating ?? 5));
   return (
-    <div className="relative z-20 w-[260px] md:w-[280px] h-[170px] md:h-[180px] rounded-xl border border-[rgba(255,20,147,0.2)] bg-white/92 p-3 text-[0.92rem] text-gray-800 shadow-[0_8px_24px_rgba(233,30,99,0.12)] ring-[rgba(255,20,147,0.1)] ring-1 backdrop-blur-md dark:border-[rgba(255,255,255,0.14)] dark:bg-black/45 dark:text-gray-100">
-      <div className="mb-1 flex items-center gap-2">
+    <div className="relative z-20 w-[240px] md:w-[250px] h-[150px] md:h-[160px] rounded-xl border border-[rgba(255,20,147,0.2)] bg-white/92 p-3 text-[0.9rem] text-gray-800 shadow-[0_8px_24px_rgba(233,30,99,0.12)] ring-[rgba(255,20,147,0.1)] ring-1 backdrop-blur-md dark:border-[rgba(255,255,255,0.14)] dark:bg-black/45 dark:text-gray-100]">
+      <div className="flex h-full flex-col items-center justify-center text-center gap-1">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={item.avatar}
@@ -134,23 +129,23 @@ function TestimonialCard({ item }: { item: Testimonial }) {
           width={40}
           height={40}
         />
-        <div className="flex flex-col leading-tight">
+        <div className="mt-1 flex flex-col leading-tight items-center">
           <span className="font-semibold">{item.name}</span>
           {item.role ? (
             <span className="text-xs text-gray-500 dark:text-gray-400">{item.role}</span>
           ) : null}
         </div>
-      </div>
-      <p className="text-[0.9rem] leading-tight line-clamp-3">{item.quote}</p>
-      <div className="mt-1 text-[--primary-pink]">
-        {Array.from({ length: stars }).map((_, i) => (
-          <span key={i}>★</span>
-        ))}
-        {Array.from({ length: 5 - stars }).map((_, i) => (
-          <span key={`e${i}`} className="opacity-30">
-            ★
-          </span>
-        ))}
+        <p className="mt-1 text-[0.9rem] leading-tight line-clamp-3">{item.quote}</p>
+        <div className="mt-1 flex justify-center text-[--primary-pink]">
+          {Array.from({ length: stars }).map((_, i) => (
+            <span key={i}>★</span>
+          ))}
+          {Array.from({ length: 5 - stars }).map((_, i) => (
+            <span key={`e${i}`} className="opacity-30">
+              ★
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
